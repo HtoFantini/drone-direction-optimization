@@ -18,18 +18,19 @@ void drone_runner(int id) {
 }
 
 int main() {
-    std::cout << "Processo Principal (PID: " << getpid() << ") iniciando " << NUMERO_DE_DRONES << " drones..." << std::endl;
+    std::cout << "Processo Principal (PID: " << getpid() << ") iniciando " << NUM_DRONES << " drones..." << std::endl;
 
     std::vector<pid_t> pids;
 
-    for (int i = 0; i < NUMERO_DE_DRONES; ++i) {
+    for (int i = 0; i < NUM_DRONES; ++i) {
         pid_t pid = fork();
 
+        // Falha ao criar o processo
         if (pid < 0) {
-            // Se o pid for negativo, a criação do processo falhou.
-            std::cerr << "Erro ao criar o processo filho (fork falhou)." << std::endl;
+            std::cerr << "Failed to fork" << std::endl;
             return 1;
 
+        // Processo criado corretamente
         } else if (pid == 0) {
             // Se o pid for 0, este é o código que o PROCESSO FILHO executa.
             drone_runner(i + 1);
@@ -49,7 +50,7 @@ int main() {
 
     // O processo pai agora espera por cada filho terminar.
     // É o análogo do 'thread::join()'.
-    for (int i = 0; i < NUMERO_DE_DRONES; ++i) {
+    for (int i = 0; i < NUM_DRONES; ++i) {
         int status;
         wait(&status);
     }
