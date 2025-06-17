@@ -1,0 +1,7 @@
+#include <iostream>
+
+Class Drone(){
+
+
+
+}
