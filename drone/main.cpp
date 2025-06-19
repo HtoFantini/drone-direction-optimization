@@ -4,12 +4,14 @@
 #include <sys/wait.h>    
 #include <chrono>        
 #include <thread>       
-
+#include "drone_functions.cpp"
 
 const int NUM_DRONES = 5;
 
-
+// Inicia a quantidade de drones necessárias com o target em startDrone()
 void drone_runner(int id) {
+
+    // Linhas abaixo são apenas para teste, nao representam o que a funcao realmente fará
     std::cout << "Processo Drone " << id << " (PID: " << getpid() << ") iniciou a execução." << std::endl;
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -17,6 +19,7 @@ void drone_runner(int id) {
     std::cout << "Processo Drone " << id << " (PID: " << getpid() << ") finalizou a execução." << std::endl;
 }
 
+// Main so deve chemar drone_runner() e ele faz toda esta gerencia
 int main() {
     std::cout << "Processo Principal (PID: " << getpid() << ") iniciando " << NUM_DRONES << " drones..." << std::endl;
 
