@@ -22,8 +22,14 @@ std::array<double, 2> genInitRandPosition() {
     return {lat, lon};
 }
 
-// Gera um angulo aleatorio
+// Gera um angulo aleatorio inicial
 float genInitRandAngle() {
     std::uniform_real_distribution<float> distrib_angle(-180.0f,180.0f);
+    return distrib_angle(genRandMotor());
+}
+
+// Gera uma randomizacao de angulo
+float randAngle(float angle_error) {
+    std::uniform_real_distribution<float> distrib_angle(-1*(angle_error),angle_error);
     return distrib_angle(genRandMotor());
 }

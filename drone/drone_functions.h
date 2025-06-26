@@ -16,4 +16,7 @@ std::array<double, 2> genInitRandPosition();
 // Gera um angulo aleatorio
 float genInitRandAngle();
 
+float randAngle(float angle_error);
+
+
 #endif // DRONE_FUNCTIONS_H

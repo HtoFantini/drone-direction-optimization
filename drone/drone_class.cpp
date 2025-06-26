@@ -12,8 +12,8 @@
 
 
 static const double WALK_DISTANCE = 10.0;
-static const float MIN_DIST_TO_ANTENA = 2.0;
-
+static const float MIN_DIST_TO_ANTENA = 10.1;
+static const float ANGLE_VARIATION_ERROR = 10.0;
 
 Drone::Drone(const char *id, const char *host, int port) : mosqpp::mosquittopp(id) {
     this->position = genInitRandPosition();
@@ -70,7 +70,9 @@ void Drone::on_subscribe(int mid, int qos_count, const int *granted_qos) {
     std::cout << "[DRONE " << pid << "] Enviando pedido de sincronizacao para a central..." << std::endl;
     json ready_msg;
     ready_msg["tipo"] = "sync";
-    ready_msg["acao"] = "drone_ready";
+    ready_msg["acao"] = "drone_pronto";
+    ready_msg["topicos_mqtt"]["topic_to_antenna"] = this ->topic_to_antenna;
+    ready_msg["topicos_mqtt"]["topic_to_drone"] = this ->topic_to_drone;
     sendMessage(ready_msg);
 }
 
@@ -81,7 +83,7 @@ void Drone::on_message(const struct mosquitto_message *message) {
     try { msg_json = json::parse(payload); } catch(...) { return; }
 
     // Recebe uma mensagem da central permitindo o inicio
-    if (msg_json.value("tipo", "") == "sync" && msg_json.value("acao", "") == "start_allowed") {
+    if (msg_json.value("tipo", "") == "sync" && msg_json.value("acao", "") == "inicio_permitido") {
         std::cout << "[DRONE " << pid << "] Permissao para iniciar recebida!" << std::endl;
         this->antena_position[0] = msg_json["dados"]["lat"];
         this->antena_position[1] = msg_json["dados"]["lon"];
@@ -89,12 +91,14 @@ void Drone::on_message(const struct mosquitto_message *message) {
     }
     // Recebe correcao do angulo
     else if (msg_json.value("tipo", "") == "comando" && msg_json.value("acao", "") == "corrigir_angulo") {
-        std::cout << "[DRONE " << pid << "] Correcao de angulo recebida: " << msg_json["valor"] << std::endl;
-        this->angle = msg_json["valor"];
+        std::cout << "[DRONE " << pid << "] Correcao de angulo recebida: " << msg_json["correcao_angular"] << std::endl;
+        float angle_fix = msg_json["correcao_angular"];
+        // Soma o angulo atual com a correcao recebida
+        this->angle += angle_fix;
     }
 }
 
-
+// Envio de mensagem MQTT
 void Drone::sendMessage(const json& msg_json) {
     std::string payload = msg_json.dump();
     publish(NULL, this->topic_to_antenna.c_str(), payload.length(), payload.c_str());
@@ -104,8 +108,11 @@ void Drone::sendMessage(const json& msg_json) {
 // Anda
 void Drone::walk() {
 
-    // Aplica uma variacao ao angulo de visada com um valor sorteado dentro de um range
-    // this->angle += uniform_real_distribution(de x ate z)
+    // Salvando o angulo antes da troca pra nao perder a variaavel
+    float angle_bkp = this->angle;
+    // Adiciona uma mudanca inesperada de direcao durante a movimentacao
+    this->angle += randAngle(ANGLE_VARIATION_ERROR);
+    std::cout << "[DRONE " << pid << "] Angulo alterado na movimentacao: " << (this->angle - angle_bkp) << std::endl;
 
     // Converter o angulo de graus para radianos
     double angle_rad = this->angle * M_PI / 180.0;
@@ -124,7 +131,7 @@ void Drone::walk() {
     // Atualizar a posicao do drone
     this->setPosition(new_position);
 
-    std::cout << "[Drone " << this->pid << "] Andou. "
+    std::cout << "[DRONE " << this->pid << "] Andou. "
                 << "Angulo: " << this->angle << " deg. "
                 << "Nova Posicao: (Lat: " << new_position[0] 
                 << ", Lon: " << new_position[1] << ")" << std::endl;
@@ -185,4 +192,24 @@ void Drone::start() {
     std::cout << "================================\n";
     std::cout << "[DRONE " << pid << "] DESTINO ALCANCADO!\n";
     std::cout << "================================\n";
+}
+
+
+int main() {
+    mosqpp::lib_init();
+
+    std::string client_id = std::to_string(getpid());
+    const char* host = "localhost";
+    int port = 1883;
+
+    std::cout << "Iniciando Drone com ID: " << client_id << std::endl;
+
+    Drone drone(client_id.c_str(), host, port);
+
+    drone.start();
+
+    mosqpp::lib_cleanup();
+
+    std::cout << "Programa do drone encerrado." << std::endl;
+    return 0;
 }
