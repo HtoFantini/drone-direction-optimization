@@ -1,1 +1,1 @@
-{"tipo": "comando", "acao": "corrigir_angulo", "angle_fix": -45.5}
+{"tipo": "comando", "acao": "corrigir_angulo", "correcao_angular": -45.5}

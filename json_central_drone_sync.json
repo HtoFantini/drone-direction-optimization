@@ -1,1 +1,1 @@
-{"tipo": "sync", "acao": "start_allowed", "position": {"lat": 12.34, "lon": 56.78}}
+{"tipo": "sync", "acao": "inicio_permitido", "dados": {"lat": 12.34, "lon": 56.78}}
