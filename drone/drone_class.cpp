@@ -174,9 +174,16 @@ void Drone::start() {
         pos_msg["dados"]["lat"] = this->position[0];
         pos_msg["dados"]["lon"] = this->position[1];
         pos_msg["dados"]["angulo"] = this->angle;
+
+        // Calcula o tempo em ms da mensagem no tipo timestamp (ms desde (01/01/1970))
+        auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()
+        ).count();
+        pos_msg["timestamp"] = timestamp;
+
         sendMessage(pos_msg);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
         std::cout << "[DRONE " << pid << "] Verificando se houve correcao e andando novamente..." << std::endl;
 
@@ -194,7 +201,7 @@ void Drone::start() {
     std::cout << "================================\n";
 }
 
-
+// EXCLUIR
 int main() {
     mosqpp::lib_init();
 
