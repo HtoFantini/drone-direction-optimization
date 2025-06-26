@@ -1,0 +1,25 @@
+# Arquivo de configuração e cache do Visual Studio Code
+.vscode/
+
+# Arquivos de compilação C/C++
+*.o
+*.a
+*.so
+*.out
+
+# Diretórios de build
+# É uma boa prática colocar todos os executáveis e arquivos de compilação
+# em uma pasta separada, como 'build' ou 'bin'.
+build/
+bin/
+
+# Executáveis
+# Ignora arquivos sem extensão (comum para executáveis no Linux/WSL)
+*
+!*.*
+!Makefile
+!LICENSE
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
