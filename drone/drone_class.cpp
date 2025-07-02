@@ -121,15 +121,51 @@ void Drone::walk() {
     double delta_x = WALK_DISTANCE * cos(angle_rad);
     double delta_y = WALK_DISTANCE * sin(angle_rad);
 
-    // Calcular a nova posicao somando o deslocamento à posicao atual
-    // Assumindo que position[0] = latitude (eixo Y) e position[1] = longitude (eixo X)
-    std::array<double, 2> new_position = {
-        this->position[0] + delta_y,
-        this->position[1] + delta_x
-    };
+    // Calcula a posição potencial para onde o drone iria sem limite
+    double unfix_lat = this->position[0] + delta_y;
+    double unfix_lon = this->position[1] + delta_x;
+    
+    double final_lat = unfix_lat;
+    double final_lon = unfix_lon;
 
-    // Atualizar a posicao do drone
+
+    // Checa se ultrapassou o Polo Norte
+    if (unfix_lat > 90.0) {
+        // Calcula o quanto "passou" da borda
+        double overshoot = unfix_lat - 90.0;
+        final_lat = 90.0 - overshoot;
+        // Inverte a longitude em 180 graus
+        final_lon += 180.0;
+        
+        // Espelha o anguo verticalmente
+        this->angle = -this->angle;
+    }
+
+    // Checa se ultrapassou o Polo Sul
+    else if (unfix_lat < -90.0) {
+        // Calcula o quanto "passou" da borda
+        double overshoot = -90.0 - unfix_lat;
+        final_lat = -90.0 + overshoot;
+        // Inverte a longitude em 180 graus
+        final_lon += 180.0;
+
+        // Espelha o anguo verticalmente
+        this->angle = -this->angle;
+    }
+
+
+    // Checar a passagem Leste-Oeste
+    if (final_lon > 180.0) {
+        final_lon -= 360.0;
+    }
+    if (final_lon < -180.0) {
+        final_lon += 360.0;
+    }
+
+    // Cria array com a posição final REAL
+    std::array<double, 2> new_position = { final_lat, final_lon };
     this->setPosition(new_position);
+
 
     std::cout << "[DRONE " << this->pid << "] Andou. "
                 << "Angulo: " << this->angle << " deg. "
@@ -201,8 +237,8 @@ void Drone::start() {
     std::cout << "================================\n";
 }
 
-// EXCLUIR
-int main() {
+// PARA EXECUTAR INDIVIDUALMENTE, É NECESSÁRIO CHAMAR ESTA FUNCAO APENAS DE MAIN
+int main_individual() {
     mosqpp::lib_init();
 
     std::string client_id = std::to_string(getpid());
