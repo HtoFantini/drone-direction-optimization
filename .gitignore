@@ -15,8 +15,6 @@ bin/
 
 # Executáveis
 # Ignora arquivos sem extensão (comum para executáveis no Linux/WSL)
-*
-!*.*
 !Makefile
 !LICENSE
 
